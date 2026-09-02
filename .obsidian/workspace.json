@@ -202,8 +202,14 @@
       "bases:Create new base": false
     }
   },
-  "active": "c73e4f816aa40deb",
+  "active": "83ac23d6de9b3fb2",
   "lastOpenFiles": [
+    "images/Pasted image 20260902192225.png",
+    "images/Pasted image 20260902182935.png",
+    "images/Pasted image 20260902180633.png",
+    "images/Pasted image 20260902171246.png",
+    "images/Pasted image 20260902171245.png",
+    "images/Pasted image 20260902170832.png",
     "Gestione ambientale e MiniCaml.md",
     "Implementazione di un ambiente in OCaml.md",
     "Macchine astratte, linguaggi, interpretazione e compilazione.md",
@@ -215,10 +221,6 @@
     "images/Pasted image 20260814171246.png",
     "images/Pasted image 20260814171302.png",
     "images/Pasted image 20260814170533.png",
-    "images/Pasted image 20260814170418.png",
-    "images/lambdacalcolo-sintassi.png",
-    "Pasted image 20260814170029.png",
-    "images/lambda-sintassi.png",
     "images"
   ]
 }
