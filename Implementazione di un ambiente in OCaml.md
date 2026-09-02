@@ -251,3 +251,6 @@ Let("f", Fun(""x", Sum(Den("x"), EInt(7))), Apply(Den("f"), EInt(2)));;
 ```
 Quindi usando la sintassi astratta delle funzioni, possiamo dire che ide diventa `Apply of Den("f")` trasformando la sintassi come segue
 ![[Pasted image 20260902192225.png]]
+
+## Tipi delle funzioni
+Assumendo scoping statico (vedendo poi il dinamico), i riferimenti non locali dell'astrazione sono risolti nell'ambiente di dichiarazione della funzione
