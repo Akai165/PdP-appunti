@@ -254,3 +254,50 @@ Quindi usando la sintassi astratta delle funzioni, possiamo dire che ide diventa
 
 ## Tipi delle funzioni
 Assumendo scoping statico (vedendo poi il dinamico), i riferimenti non locali dell'astrazione sono risolti nell'ambiente di dichiarazione della funzione
+La definizione mostra che il valore esprimibile di una astrazione funzionale è una chiusura, che comprende: 
+- nome del parametro formale
+- corpo della funzione dichiarata
+- ambiente al momento della dichiarazione
+Quindi creo una chiusura, creo un pacchetto con il necessario per sopravvivere allo scoping 
+```ocaml
+Closure of ide * exp * evT env
+```
+dove 
+- `ide` è il parametro formale
+- `exp` è il corpo della funzione
+- `evT env` è l'ambiente nel momento esatto in cui la funzione viene definita
+## Semantica operazionale dell'applicazione di funzione (scoping statico)
+- Recupero la chiusura 
+- Valuto l'espressione che corrisponde al parametro attuale
+- Estendo l'ambiente di dichiarazione della funzione presente all'interno della chiusura, con il legame tra parametro formale e valore ottenuto 
+- Valuto il corpo della funzione nell'ambiente così ottenuto 
+
+## Regole d'interprete per scoping statico 
+```ocaml
+let rec eval(e: exp) (s: evT env) : evT = 
+	match e with 
+	| ...
+	| Fun(arg, ebody) -> Closure(arg, ebody, s) (*introduzione alla chiusura*)
+	| Apply(Den(f), eArg) ->
+		let fclosure = s f in 
+			(match fclosure with
+			| Closure(arg, fbody, fDecEnv) -> 
+				let aVal = eval eArg s in
+				let aenv = bind fDecEnv arg aVal in
+					eval fbody aenv
+			| _ -> failwith("non functional value"))
+	| Apply(_, _) -> failwith("Application: not first order function")
+```
+Spiegazione: 
+- Fun
+	- Prendo un input `arg`
+	- Prendo un nome dell'input `arg`, il codice della funzione `ebody` e mi salvo l'ambiente nel momento della dichiarazione della funzione. 
+- Apply
+	- Prendo una funzione `Den(f)`
+	- Prendo degli argomenti `eArg`
+	- Vado a cercare se nello stato delle variabili attuale se esiste la funzione (`let fclosure = ...`)
+	- Prendo tutti i pezzi salvati nella funzione (argomento, codice, e l'ambiente `fDecEvn`)
+	- Se è del tipo della funzione (`Closure`) allora
+	- Calcolo il valore dell'input che gli sto passando 
+	- Uso l'ambiente della funzione e ci aggiorno l'ambiente
+	- Faccio partire le istruzioni della funzione facendola eseguire dentro l'ambiente nuovo creato. 
