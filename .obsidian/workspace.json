@@ -13,12 +13,26 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Interpreti OCaml.md",
+                "file": "Implementazione di un ambiente in OCaml.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Interpreti OCaml"
+              "title": "Implementazione di un ambiente in OCaml"
+            }
+          },
+          {
+            "id": "24dad07d7f813447",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Macchine astratte, linguaggi, interpretazione e compilazione.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Macchine astratte, linguaggi, interpretazione e compilazione"
             }
           }
         ]
@@ -83,8 +97,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200,
-    "collapsed": true
+    "width": 200
   },
   "right": {
     "id": "b2d967b654755d61",
@@ -191,8 +204,11 @@
   },
   "active": "c73e4f816aa40deb",
   "lastOpenFiles": [
-    "OCaml.md",
+    "Gestione ambientale e MiniCaml.md",
+    "Implementazione di un ambiente in OCaml.md",
+    "Macchine astratte, linguaggi, interpretazione e compilazione.md",
     "Interpreti OCaml.md",
+    "OCaml.md",
     "images/Pasted image 20260820143728.png",
     "images/Pasted image 20260820143351.png",
     "Lambda-calcolo.md",
