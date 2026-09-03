@@ -301,3 +301,127 @@ Spiegazione:
 	- Calcolo il valore dell'input che gli sto passando 
 	- Uso l'ambiente della funzione e ci aggiorno l'ambiente
 	- Faccio partire le istruzioni della funzione facendola eseguire dentro l'ambiente nuovo creato. 
+
+# Scoping Dinamico
+Per questo scoping dobbiamo modificare evT
+- La definizione mostra che il valore esprimibile che corrisponde all'astrazione funzionale, oltre al parametro formale, contiene solo il corpo della funzione dichiarata. 
+- Il corpo della funzione verrà valutato nell'ambiente in cui avviene l'applicazione, legando i parametri formali ai valori dei parametri attuali. 
+In sostanza non abbiamo bisogno di salvarci una copia dell'ambiente nel momento della dichiarazione della funzione, in quanto i valori andranno a cambiare nel momento in cui andiamo a chiamare la nostra funzione. 
+```
+Funval of ide * exp
+Apply of Den("f") * exp
+```
+Identificatori come parametri formali nel costrutto di astrazione
+Espressioni (parametri attuali) nel costrutto di applicazione. 
+
+L'astrazione funzionale contiene solo il parametro formale e il corpo della funzione dichiarata. 
+Il corpo della funzione viene valutato nell'ambiente nel quale avviene l'applicazione, e non in uno snippet del momento della dichiarazione. 
+![[Pasted image 20260903102821.png]]
+
+## Scoping dinamico Interprete
+```ocaml
+let rec eval (e: exp) (s: evT env) : evT = 
+	match e with
+	| ...
+	| Fun(arg, ebody) -> Funval(arg, ebody) 
+	| Apply(Den(f), eArg) -> 
+		let fval = s f in 
+			(match fval with
+			| Funval(arg, fbody) ->
+				let aVal = eval eArg s in
+					eval fbody aenv)
+```
+
+- `Fun(arg, ebody) ...` Il valore associato alla funzione contiene solo il parametro formale e il corpo della funzione
+- `Apply(Den(f)...` Applicazione della funzione
+- `let fval = s f in` Recupero la funzione dall'ambiente corrente (il valore associato ad f)
+- `Funval(arg, fbody)` Recupero dall'ambiente corrente s il valore associato a f (la funzione )
+- `let aVal = eval eArg s in` Valuto il parametro attuale eArg nell'ambiente attuale s, ottenendo aVal (valuto la funzione dentro l'ambiente attuale)
+- `let aVal = ...` Estendo l'ambiente attuale s con l'associazione tra arg e il valore aVal (passo i parametri)
+- `eval fbody aenv` Valuto il corpo della funzione con eval in aenv (ambiente con i parametri passati)
+
+## Ricapitolando lo scoping
+- **Statico**: Prendo e valuto le cose al momento della dichiarazione della funzione principale, salvandomi nella sua dichiarazione l'ambiente che c'era durante quel momento e modificando solo quell'ambiente lì. 
+- **Dinamico**: Prendo e valuto le cose durante l'esecuzione, non salvandomi ambienti a parte ma valutando tutto nell'ambiente principale. 
+
+
+# Definizioni Ricorsive
+
+Per auto-chiamarsi, il nome della funzione deve già esistere nell'ambiente.
+Per permettere la ricorsione, il corpo della funzione deve essere valutato in un ambiente dove la funzione è già stata estesa. 
+Serve estendere la semantica con 
+- Un costrutto speciale per dichiarare funzioni ricorsive 
+- Oppure un tipo speciale di astrazione funzionale per le funzioni ricorsive
+- Una chiusura speciale ricorsiva in modo che la funzione possa essere messa dentro il proprio ambiente di definizione
+
+## Letrec
+Estendiamo la sintassi astratta del linguaggio didattico con un opportuno costruttore
+```ocaml
+type exp = 
+	| ...
+	| Letrec of ide * ide * exp * exp
+	
+Letrec("f", "x", fbody, letbody)
+```
+- f è il nome della funzione
+- x è il parametro formale
+- fbody è il corpo della funzione
+- letbody è il corpo del let
+## Valori esprimibili evT
+
+È necessario estendere anche i valori evT introducendo le astrazioni funzionali ricorsive
+```ocaml
+type evT = 
+	| ...
+	| RecClosure of ide * ide * exp * exp * evT env
+```
+```ocaml
+RecClosure(funName, 
+			param, 
+			funBody, 
+			staticEnvironment)
+```
+La chiusura ricorsiva contiene il nome della funzione stessa, il parametro, il corpo della funzione e l'ambiente di dichiarazione. 
+
+```ocaml
+let rec eval (e: exp) (s: evT env) : evT = 
+	match e with 
+	| ...
+	| Letrec(f, arg, fBody, letBody) -> 
+		let benv = 
+		bind s f (RecClosure(f, arg, fBody, s))
+```
+- Controllo che la valutazione sia una funzione ricorsiva (il match)
+- Creo una chiusura diversa per le funzioni ricorsive dove mi salvo dentro argomenti, corpo funzione, ambiente corrente e nome della funzione
+- Estendo l'ambiente tramite questa nuova chiusura (`benv`)
+## Passi dell'interprete per l'applicazione
+- Il valore della chiusura RecClosure viene recuperato dall'ambiente corrente
+- Il parametro attuale eArg viene valutato nell'ambiente corrente s
+- L'ambiente statico fDecEnv memorizzato nella chiusura viene esteso con il legame tra il nome e fclosure ottenendo l'ambiente rEnv
+- L'ambiente effettivo di esecuzione aEnv viene ottenuto estendendo l'ambiente renv con l'associazione tra arg e aVal
+- La funzione valuta con eval dbdoy in aenv che contiene sia l'accesso ricorsivo a f che il valore di arg
+
+## Funzioni Higher-Order
+Quando l'interprete incontra una chiamata di funzione, esegue quattro passaggi sequenziali 
+- Valuta l'espressione della funzione eF per ottenere un valore funzionale che corrisponde a una chiusura 
+- Valuta l'argomento attuale all'interno dell'ambiente corrente per calcolarne il valore concreto 
+- Prende l'ambiente all'interno della chiusura e lo estende creando un binding che associa il parametro formale al valore dell'argomento appena calcolato
+- Valuta il corpo della funzione all'interno di questo nuovo ambiente esteso. 
+```ocaml
+| Apply(eF, eArg) -> 
+	let fclosure = eval eF s in 
+		(match fclosure with
+		| Closure(arg, fbody, fDecEnv) -> 
+			let aVal = eval eArg s in (*controllo i valori di arg in s*)
+				let aenv = bind fDecEnv arg aVal in (*estendo s con gli argometni*)
+					eval fbody aenv (*valuto la funzione*)
+		| RecClosure(f, arg, fbody, fDecEnv) -> 
+			let aVal = eval eAarg s in (*controllo i valori di arg in s*)
+				let rEnv = bind fDecEnv f fclosure in (*estendo s con f e i valori e la funzione ricorsiva stessa*)
+					let aenv = bind rEnv arg aVal in 
+						eval fbody aenv
+		| _ -> failwith("non functional value")) ;;
+```
+
+$\lambda k. \lambda z. (xkz)$
+
