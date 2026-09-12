@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Implementazione di un ambiente in OCaml.md",
+                "file": "Programmazione ad oggetti.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Implementazione di un ambiente in OCaml"
+              "title": "Programmazione ad oggetti"
             }
           },
           {
@@ -27,15 +27,16 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Macchine astratte, linguaggi, interpretazione e compilazione.md",
+                "file": "Java e OOP.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Macchine astratte, linguaggi, interpretazione e compilazione"
+              "title": "Java e OOP"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -202,25 +203,27 @@
       "bases:Create new base": false
     }
   },
-  "active": "c73e4f816aa40deb",
+  "active": "24dad07d7f813447",
   "lastOpenFiles": [
-    "Pasted image 20260903102821.png",
+    "Programmazione ad oggetti.md",
+    "OOP OCaml.md",
+    "OCaml.md",
+    "Macchine astratte, linguaggi, interpretazione e compilazione.md",
+    "Lambda-calcolo.md",
+    "Java e OOP.md",
+    "Interpreti OCaml.md",
+    "Implementazione di un ambiente in OCaml.md",
+    "Gestione ambientale e MiniCaml.md",
+    "images/Pasted image 20260912174342.png",
+    "images/Pasted image 20260910192259.png",
+    "images/Pasted image 20260903102821.png",
     "images/Pasted image 20260902192225.png",
     "images/Pasted image 20260902182935.png",
     "images/Pasted image 20260902180633.png",
     "images/Pasted image 20260902171246.png",
     "images/Pasted image 20260902171245.png",
     "images/Pasted image 20260902170832.png",
-    "Gestione ambientale e MiniCaml.md",
-    "Implementazione di un ambiente in OCaml.md",
-    "Macchine astratte, linguaggi, interpretazione e compilazione.md",
-    "Interpreti OCaml.md",
-    "OCaml.md",
     "images/Pasted image 20260820143728.png",
-    "images/Pasted image 20260820143351.png",
-    "Lambda-calcolo.md",
-    "images/Pasted image 20260814171246.png",
-    "images/Pasted image 20260814171302.png",
     "images"
   ]
 }
