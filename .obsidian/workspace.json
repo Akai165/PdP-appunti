@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Programmazione Concorrente.md",
+                "file": "Domande Orale con Risposta.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Programmazione Concorrente"
+              "title": "Domande Orale con Risposta"
             }
           }
         ]
@@ -190,18 +190,21 @@
   },
   "active": "3bec110eeba2aa70",
   "lastOpenFiles": [
-    "Programmazione Concorrente.md",
+    "Java e OOP.md",
+    "Domande Orale con Risposta.md",
+    "Lambda-calcolo.md",
+    "Macchine astratte, linguaggi, interpretazione e compilazione.md",
     "Memory Safety e Rust.md",
+    "Interpreti OCaml.md",
+    "OOP OCaml.md",
+    "OCaml.md",
+    "Implementazione di un ambiente in OCaml.md",
+    "Gestione ambientale e MiniCaml.md",
+    "Programmazione ad oggetti.md",
+    "Programmazione Concorrente.md",
     "images/Pasted image 20260912174342.png",
     "images/Pasted image 20260910192259.png",
     "images/Pasted image 20260903102821.png",
-    "Programmazione ad oggetti.md",
-    "OOP OCaml.md",
-    "Java e OOP.md",
-    "Macchine astratte, linguaggi, interpretazione e compilazione.md",
-    "Implementazione di un ambiente in OCaml.md",
-    "Interpreti OCaml.md",
-    "Lambda-calcolo.md",
     "images/Pasted image 20260902192225.png",
     "images/Pasted image 20260902182935.png",
     "images/Pasted image 20260902180633.png",
@@ -209,8 +212,6 @@
     "images/Pasted image 20260902171245.png",
     "images/Pasted image 20260902170832.png",
     "Pasted image 20260903102821.png",
-    "Gestione ambientale e MiniCaml.md",
-    "OCaml.md",
     "images"
   ]
 }
