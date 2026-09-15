@@ -92,3 +92,19 @@ In presenza di ereditarietà singola tra classi, la JVM organizza i metodi in un
 ```
 Quando viene chiamato un metodo su un obj la JVM accede al descrittore dell'oggetto dell'heap per identificare la clsase a runtime e recuperare il riferimetno della classe/tabelle dei metodi. In base al tipo apparente con cui è referenziato l'oggetto, il bytecode userà un'istruzione differente per risolvere l'indirizzo del metodo da eseguire. 
 La differenza alla chiamata mario è che nel caso di `Prova` ha la tabella dei metodi pronta e quindi l'esecuzione sarà a O(1). Nel caso di oggetto I2 il compilatore conosce solamente l'interfaccia I2 ma non conosce a priori quale classe ha a runtime il riferimento. La JVM esegue il puntatore della iTable della classe concreta. Fa una scansione/ricerca nell'interface Map fino a prendere la voce I2, una volta trovata l'interfaccia accede al relativo offset. Ha un overhead maggiore e per limitare questa cosa la JVM sfrutta tecniche di inline caching. 
+
+
+## 7) Descrivere caratteristiche e funzionamento degli iteratori nel Java Collection Framework. Nel codice seguente, quale problematica si verifica a runtime e come va risolta?
+```Java
+void pulisciLista(List<String> lista, String s) {
+    Iterator<String> iterator = lista.iterator();
+    while (iterator.hasNext()) {
+        String elemento = iterator.next();
+        if (elemento.equals(s))
+            lista.remove(elemento);
+    }
+}
+```
+Gli Iteratori nel JCF implementano l'oggetto Iterator che serve per scorrere sequenzialmente gli oggetti di una collezione astraendo dalla sua struttura dati effettiva. Fornisce 3 metodi cardine, hasNext per verificare la presenza di altri elementi, next per restituire l'elemento successivo e remove per eliminare in sicurezza l'ultimo elemento restituito. 
+L'algoritmo è separato dalla logica esterna della collezione, ma la collezione nel momento in cui ha un iterator attivo, non può essere modificata se non con il metodo remove dello stesso. 
+Nel codice infatti all'interno dell'if la modifica strutturale con remove è fatta tramite la Lista e non tramite Iterator. Questo porta ad un disallineamento rispetto alla lista modificata dell'iteratore e porta ad un'eccezione nel codice. Per risolvere andrebbe scritto al posto di `lista.remove(elemento)` `iterator.remove()`. 
