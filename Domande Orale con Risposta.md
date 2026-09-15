@@ -149,3 +149,43 @@ I meccanismi di mutua esclusione sono necessari per evitare problemi di perdita 
 
 ## 12) Motivare l'importanza dei lock e spiegare la differenza tra locking coarse-grained e fine-grained. 
 
+I lock sono molto importanti nella programmazione concorrente in quanto permettono di non avere comportamenti imprevisti o perdite di operazioni durante l'esecuzione dei thread. Un lock è un lucchetto che si mette alla variabile che il thread deve rispettare. Quando un processo vuole accedere ad una locazione di memoria, lo farà con il lock di quella locazione. Il lock è un'operazione che permette di bloccare la cella nel momento in cui è libera, se non è libera il thread si metterà in attesa fino a che quella variabile non sarà libera. Dopo averla bloccata il processo farà quello che deve fare e alla fine sbloccherà la cella con unlock. 
+I lock possono essere dentro un programma di 2 categorie, entrambe con vantaggi e svantaggi. 
+- Coarse-Grained: ci sono pochi mutex alle strutture dati (o addirittura 1 e basta). Questo ha il vantaggio di rendere molto semplice l'implementazione della programmazione concorrenziale, ma porta lo svantaggio di rendere il programma più lento, in alcuni casi addirittura sequenziale. Prendendo come esempio una collezione, con un mutex coarse grained la programmazione parallela sembrerà quasi sequenziale, in quanto ci sarebbe un mutex solo che impedirebbe l'accesso a tutta la struttura dati invece che ai singoli elementi, aumentando il tempo di esecuzione. 
+- Fine-Grained: molti mutex a gestire tutte le sezioni. Per esempio all'interno di una collezione, un mutex per ogni cella. Questo permette sempre con l'esempio della collezione di poter far accedere a thread diversi diverse sezioni della collezione, potendo gestirle contemporaneamente e diminuendo di molto il tempo di esecuzione. Gli svantaggi principali di questa tecnica sono 2, uno è la difficoltà di implementazione, in quanto dovremo aggiungere più mutex e gestirli. Il secondo svantaggio che porta questa tecnica è il Deadlock, problematica che avviene nel momento in cui due processi rimangono bloccati a tempo indeterminato, ognuno in una risorsa occupata da un'altro. 
+
+## 13) Spiegare la problematica del deadlock, indicare poi se la seguente coppia di processi paralleli può finire in deadlock, motivando formalmente la risposta
+Processo 1: 
+```
+lock m1;
+lock m2;
+l3 := 1 + !l2;
+lock m3;
+l2 := !l3 + !l1;
+unlock m3;
+unlock m2;
+unlock m1;
+```
+Processo 2: 
+```
+lock m3;
+lock m2;
+lock m1;
+l1 := !l2 + !l3;
+unlock m3;
+unlock m2;
+l1 := !l1 + 1;
+unlock m1;
+```
+
+Il deadlock è una problematica della programmazione concorrenziale. Occorre quando due o più processi vogliono accedere a delle risorse già bloccate da altri thread in modo simile, portando a loop infiniti. 
+Prendiamo come esempio 2 processi
+p1: lock m2, lock m1
+p2: lock m1, lock m2
+Entrambi i processi fanno il primo lock, bloccando m1 e m2. Quando però vorranno bloccare con il lock successivo, entreranno in loop infinito in quanto entrambi vorranno il corrispettivo lock ma rimarranno sempre in attesa in quanto lock bloccato dall'altro processo. 
+
+I 2 processi possono andare in deadlock. Prendiamo come esempio questa sequenza: 
+P1: lock m1 e p2: lock m3. Qua nessun problema, passiamo alla prossima. 
+P1: lock m2, P2: lock m2 (wait). Qua nessun problema, p1 procede e p2 aspetta. 
+P1: operazione, P2: wait. Sempre nessun problema
+P1: lock m3 (wait), P2: wait. Qua p1 cercherà di accedere a m3, che però è già bloccato da p2 che è in wait per la liberazione di m2. Qua si è appena creato un deadlock. 
