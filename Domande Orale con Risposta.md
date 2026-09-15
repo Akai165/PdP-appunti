@@ -189,3 +189,41 @@ P1: lock m1 e p2: lock m3. Qua nessun problema, passiamo alla prossima.
 P1: lock m2, P2: lock m2 (wait). Qua nessun problema, p1 procede e p2 aspetta. 
 P1: operazione, P2: wait. Sempre nessun problema
 P1: lock m3 (wait), P2: wait. Qua p1 cercherà di accedere a m3, che però è già bloccato da p2 che è in wait per la liberazione di m2. Qua si è appena creato un deadlock. 
+
+## 14) Come si posiziona Rust rispetto a linguaggi come C/C++ e Java in termini di controllo e sicurezza della memoria?
+
+Rust è a metà strada prendendo i vantaggi di entrambe le metodologie. Garantisce sia controllo di basso livello che memory safety tutto a tempo di compilazione senza nessun Garbage Collector. Rust riesce a fare questo su un sistema basato su 3 regole
+- Ownership: tutti i valori in memoria di Rust hanno un solo owner (variabile) alla volta quando l'owner esce dallo scope, la memoria viene deallocata all'istante. 
+- Borrowing: è possibile accedere ai dati per riferimento. O hai infiniti riferimenti in lettura, o hai un solo riferimento mutabile.
+- Cicli di vita: il compilatore mappa la validità di ogni riferimento per assicurarsi che nessun dato venga deallocato mentre un riferimento è ancora in uso. 
+
+## 15) Descrivere brevemente il modello della memoria della Java Virtual Machine (ambiente delle classi, stack e heap) e disegnare lo stato della memoria nel momento in cui il programma raggiunge il commento //ferma qui
+```java
+class Alpha {
+	public static void main(..) {
+	Beta b1 = new Beta();
+	Beta b2 = new Beta();
+	b2.foo();
+	};
+}
+
+class Beta { 
+	public static int x=10;
+	
+	private int y=20;
+	
+	public void foo() {
+		x+=1;
+		y+=1;
+		//ferma qui
+	}
+}
+```
+
+La JVM suddivide la memoria in 3 aree principali
+- Ambiente delle classi: Contiene i metadati di tutte le classi caricate, il bytecode dei metodi e le variabili statiche condivise da tutte le istanze della classe. 
+- Heap: Memoria dinamica condivisa dove vivono tutti gli oggetti creati con le new e le loro variabili d'istanza (campi non statici)
+- Call Stack: Organizzato in stack frame (uno per ogni chiamata di metodo attiva). Conserva le variabili locali, i riferimenti agli oggetti nell'heap e il riferimento implicito this. 
+
+## 16) Che cosa si intende per "dynamic dispatch" nei linguaggi object-oriented e come viene realizzato in modo efficiente tramite il meccanismo dei "dispatch vector" (anche detti tabelle dei metodi o vtable)
+
