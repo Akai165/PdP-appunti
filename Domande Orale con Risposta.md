@@ -108,3 +108,44 @@ void pulisciLista(List<String> lista, String s) {
 Gli Iteratori nel JCF implementano l'oggetto Iterator che serve per scorrere sequenzialmente gli oggetti di una collezione astraendo dalla sua struttura dati effettiva. Fornisce 3 metodi cardine, hasNext per verificare la presenza di altri elementi, next per restituire l'elemento successivo e remove per eliminare in sicurezza l'ultimo elemento restituito. 
 L'algoritmo è separato dalla logica esterna della collezione, ma la collezione nel momento in cui ha un iterator attivo, non può essere modificata se non con il metodo remove dello stesso. 
 Nel codice infatti all'interno dell'if la modifica strutturale con remove è fatta tramite la Lista e non tramite Iterator. Questo porta ad un disallineamento rispetto alla lista modificata dell'iteratore e porta ad un'eccezione nel codice. Per risolvere andrebbe scritto al posto di `lista.remove(elemento)` `iterator.remove()`. 
+
+## 8) Descrivere l'approccio di garbage collection "mark and sweep" indicandone vantaggi e svantaggi
+
+L'approccio mark and sweep del garbage collector funziona a 2 fasi, come da nome la fase mark e la fase sweep. 
+La fase mark è quella iniziale, tutte le celle di memoria puntate sono categorizzate itrinsicamente in una struttura dati a grafo dove i nodi sono le celle di memoria e gli archi sono i puntatori a tali celle. In questa fase il GC partendo da tutte le radici va a controllare tutti i nodi di questo grafo, andandoli a segnare in una frazione di quella cella di memoria. La fase di sweep è la fase successiva, andando a controllare in tutto l'heap tutte le celle di memoria non segnate dalla fase precedente, eliminandole. Questo ciclo di iterazioni viene fatto on-demand quando la memoria libera sta per esaurirsi (esempio malloc o new) oppure periodicamente in background. Questa metodologia ha il vantaggio di levare problematiche come puntatori a ciclo (problema importante della metodologia counting reference), però porta ad avere tempi di esecuzione più lunghi in quanto il programma deve essere temporaneamente interrotto per poter permettere l'esecuzione delle due fasi. Un'altro svantaggio è che non gestisce la frammentazione della memoria dell'heap. 
+
+## 9) Descrivere la tecnica di garbage collection denominata "copying collection", discutendone vantaggi e svantaggi. 
+
+La tecnica copying collection è una tecnica del garbage collector basata su mark and sweep che va a risolvere il problema di frammentazione dell'heap. 
+La tecnica si basa non su uno ma su due heap separati. Uno attuale e uno di copia. 
+Il procedimento è: 
+- Fase di Mark and Sweep sull'heap attivo, quindi ricerca a partire da tutte le radici del grafo dei puntatori di tutte le celle attualmente utilizzate (che hanno un puntatore attivo valido partendo da variabili globali o metodi globali) per segnarle (Mark) 
+- Fase di Copying: Ogni elemento dopo che viene segnato come utilizzato, viene poi copiato dentro l'heap copia, tutti questi elementi saranno copiati insieme e vicini tra di loro, permettendo all'heap copia di essere non frammentato e più ottimizzato dell'heap attuale. Dopo che tutti i nodi marked saranno stati copiati, a quel punto si scambia il ruolo dei due heap. 
+Il vantaggio di questo approccio è una frammentazione nulla dell'heap, in quanto ad ogni ciclo di esecuzione si avrà come risultato un heap non frammentato e ottimizzato. Gli svantaggi di questa tecnica sono il maggior consumo di memoria (non uno ma ben 2 heap) e, visto il suo utilizzo di Mark and Sweep, la velocità di esecuzione in quanto sarà necessario bloccare temporaneamente il programma per effettuare le operazioni di pulizia. 
+
+## 10) Descrivere l'approccio basato su reference counting con vantaggi e svantaggi. Scrivere un breve esempio di codice/pseudo-codice in cui emerge il problema principale di questo modello.
+
+L'approccio reference counting per il Garbage Collector si basa su un contatore dentro la locazione di memoria che segna il numero di puntatori che puntano ad essa. Ogni volta che un puntatore punta o non punta più ad una locazione, il contatore viene aggiornato. Nel momento in cui il contatore tocca 0, la locazione viene liberata. 
+- L'approccio ha il vantaggio di essere molto veloce e real-time, non a bisogno di cicli di interruzione del programma per funzionare.
+- L'approccio però porta anche degli svantaggi, non va a considerare la frammentazione dell'heap, e in primis porta al problema dei puntatori ciclici. 
+Per problema di puntatori ciclici si intende 2 Locazioni (variabili o classi) che si puntano a vicenda. In questo caso se lo scoping non va ad utilizzarli, essi dovrebbero essere cancellati, però puntandosi a vicenda entrambi avranno 1 sul contatore del GC e quindi non verranno mai eliminati. 
+Un esempio in pseudo-codice della cosa potrebbe essere
+```
+class amici = {amico}
+
+function scoping () = {
+	amico amico1 = new amici;
+	amico amico2 = new amici; 
+	amico1.amico = amico2;
+	amico2.amico = amico1;
+	//uscita dallo scope
+}
+```
+In questa funzione abbiamo amico1 e amico2 che si puntano a vicenda. Nel momento in cui lo scoping andrà fuori dalla funzione per il suo completamento, amico1 e amico2 non verranno cancellati in quanto avranno il loro puntatore a vicenda che segna 1 sul counter. 
+
+## 11) Perché servono i meccanismi di mutua esclusione (mutex/lock)? Quale problema può verificarsi a livello assembler se due thread eseguono in parallelo assegnamenti alla stessa variabile come `x := x +1 || x := x + 7`?
+
+I meccanismi di mutua esclusione sono necessari per evitare problemi di perdita di operazioni o altri comportamenti non previsti all'interno della programmazione parallela. Un operazione di assegnamento per esempio a livello assembler è divisa in 3 operazioni, una di lettura, addizione e memorizzazione della variabile. Il problema sorge nel momento in cui queste operazioni vengono fatte in parallelo tra due thread. E' possibile che entrambi i thread facciano nello stesso momento la fase di lettura (non esattamente nello stesso momento in quanto la lettura è atomica, quindi assumiamo che nello stesso momento sia sequenziale), quindi ipotizzando nell'esempio un valore iniziale di x = 0, in entrambi i thread l'operazione sarà 0. A questo punto in base a quale thread farà l'operazione per ultimo, avremo due risultati diversi (o 1 o 7). I meccanismi di mutua esclusione servono proprio a questo, servono a poter permettere l'accesso ad una cella di memoria solamente uno alla volta, permettendo ai 2 thread di accedere alla cella, bloccarla,  fare le loro operazioni e poi sbloccarla. In questo modo indipendentemente da quale delle due operazioni verrà eseguita prima, il risultato sarà sempre 8. 
+
+## 12) Motivare l'importanza dei lock e spiegare la differenza tra locking coarse-grained e fine-grained. 
+
