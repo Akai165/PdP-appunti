@@ -18,3 +18,77 @@ Non posso assegnare un oggetto di tipo ListInteger a un riferimento di tipo List
 ## 4) Descrivere brevemente le problematiche tipiche dell'ereditarietà multipla (ex. problema del diamante) e la soluzione adottata in C++
 
 L'ereditarietà multipla consente ad una classe di derivare contemporaneamente da più classi base. Offre grande espressività ma porta a problemi a livello sintattico e semantico e di layout di memoria. Il problema principale a cui si fa riferimento è il Diamond Problem. Se abbiamo due classi diverse B e C ed entrambe ereditano da A. Nel momento in cui una classe D eredita sia da B che da C, il compilatore non sa da quale due andare a prendere i riferimenti, generando errori di ambiguità a compile-time. La soluzione adottata da C++ è tramite la parola virtual. Quando andiamo a far ereditare ad una classe con virtual, il compilatore garantisce che tutte le classi che ereditano in questo modo abbiano un'istanza unica condivisa di A, eliminando duplicazioni e ambiguità di accesso. È compito del costruttore della classe più derivata (D) invocare direttamente il costruttore della base virtuale A, scavalcando le chiamate di B e C. Questa soluzione elimina gli accessi tramite offset ma aggiunge puntatori nascosti per risolvere l'indirizzo della base comune. 
+
+## 5) Date le seguenti classi, disegnare le tabelle dei metodi delle due classi, spiegandone il funzionamento e il vantaggio dello sharing strutturale
+```Java
+class Prima {
+	int val = 0; 
+	int getVal() { return val; }
+	void update(int x) { val = x; }
+}
+
+class Seconda extends Prima {
+	int old = 0;
+	void update(int x) { old = val; val = x; }
+	void reset() { val = 0; old = 0; }
+}
+```
+Disegno la tabella dei metodi
+```
+Tabella dei metodi di Prima (CLASS Prima):
++-------+-------------------+
+| Index | Metodo            |
++-------+-------------------+
+|   0   | Prima::getVal     |
+|   1   | Prima::update     |
++-------+-------------------+
+
+Tabella dei metodi di Seconda (CLASS Seconda):
++-------+-------------------+
+| Index | Metodo            |
++-------+-------------------+
+|   0   | Prima::getVal     |  <-- ereditato (stesso puntatore)
+|   1   | Seconda::update   |  <-- sovrascritto (puntatore aggiornato)
+|   2   | Seconda::reset    |  <-- metodo aggiunto dalla sottoclasse
++-------+-------------------+
+```
+Il compilatore conosce solo il tipo apparente della variabile. Il compilatore vede che update si trova all'indice statico 1 nella tabella Prima e quindi prende quello nel caso di `Prima obj = new Seconda(); obj.update(10)`A tempo di esecuzione invece il descrittore dell'oggetto puntato da obj viene analizzato dalla JVM per ricavarne il tipo effettivo (in questo caso Seconda). 
+Poiché update ha avuto un Override da parte di Seconda, vado a prendere quella funzione lì, realizzando un dynamic dispatch senza dover risalire la catena di ereditarietà. 
+Lo sharing strutturale consiste nel fare in modo che la tabella della sottoclasse riprenda la struttura (ordine delle righe e indici) della tabella della superclasse, aggiungento in coda i nuovi metodi. 
+Questo permette condivisione dle codice per metodi non ridefiniti come getVal e risoluzione in tempo costante O(1) a tempo di compilazione. 
+
+## 6) Descrivere il meccanismo delle iTable per la gestione delle interfacce in Java. Dato il codice disegnare la tabella dei metodi della classe Prova e la relativa iTable, spiegando brevemente il funzionamento al momento dell'invocazione. Cosa cambia chiamando il metodo mario su un oggetto con tipo apparente Prova rispetto a uno con tipo apparente I2?
+```Java
+interface I1 {
+    public void pippo();
+    public void pluto();
+}
+interface I2 {
+    public void mario();
+    public void luigi();
+}
+class Prova implements I1, I2 {
+    public Prova() { System.out.println("C"); }
+    public void pippo() { System.out.println("Pippo"); }
+    public void pluto() { System.out.println("Pluto"); }
+    public void mario() { System.out.println("Mario"); }
+    public void luigi() { System.out.println("Luigi"); }
+    public void foo() { }
+}
+```
+In presenza di ereditarietà singola tra classi, la JVM organizza i metodi in una tabella chiamata Dispatch Vector o tabella dei metodi. Grazie al meccanismo dello sharing strutturale la tabella di un a sottoclasse mantiene esattamente l'ordine e gli offset dei metodi originali della superclasse. Il compilatore può dunque calcolare staticamente l'indice del metodo e la chiamata avviene in O(1) tramite l'istruzione bytecode `invokevirtual`. Quanto una classe invoca più interfacce, lo sharing strutturale non funziona più in quanto entrambe le classi vorranno indici che andranno a cozzare tra di loro. JVM applica la iTable ossia una struttura interna associata alla classe che mappa ogni interfaccia implementata al relativo sotto-vettore di metodi dedicati. 
+```
++------------------------------------+
+|       Interface Map (iTable)       |
++--------------+---------------------+
+| Interfaccia  | Metodi / Puntatori  |
++--------------+---------------------+
+| "I1"         | pippo -> Prova.pippo|
+|              | pluto -> Prova.pluto|
++--------------+---------------------+
+| "I2"         | mario -> Prova.mario|
+|              | luigi -> Prova.luigi|
++--------------+---------------------+
+```
+Quando viene chiamato un metodo su un obj la JVM accede al descrittore dell'oggetto dell'heap per identificare la clsase a runtime e recuperare il riferimetno della classe/tabelle dei metodi. In base al tipo apparente con cui è referenziato l'oggetto, il bytecode userà un'istruzione differente per risolvere l'indirizzo del metodo da eseguire. 
+La differenza alla chiamata mario è che nel caso di `Prova` ha la tabella dei metodi pronta e quindi l'esecuzione sarà a O(1). Nel caso di oggetto I2 il compilatore conosce solamente l'interfaccia I2 ma non conosce a priori quale classe ha a runtime il riferimento. La JVM esegue il puntatore della iTable della classe concreta. Fa una scansione/ricerca nell'interface Map fino a prendere la voce I2, una volta trovata l'interfaccia accede al relativo offset. Ha un overhead maggiore e per limitare questa cosa la JVM sfrutta tecniche di inline caching. 
