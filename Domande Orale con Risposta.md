@@ -227,3 +227,17 @@ La JVM suddivide la memoria in 3 aree principali
 
 ## 16) Che cosa si intende per "dynamic dispatch" nei linguaggi object-oriented e come viene realizzato in modo efficiente tramite il meccanismo dei "dispatch vector" (anche detti tabelle dei metodi o vtable)
 
+Per Dynamic dispatch si intende il meccanismo con cui un linguaggio ad oggetti decide run-time quale specifica implementazione di un metodo eseguire quando c'è di mezzo un polimorfismo. 
+Se per esempio ho una variabile statica A che a tempo di esecuzione punta ad un'istanza reale di tipo B, e invoco A.metodo(), il dynamic dispatch fa sì che venga eseguito il metodo che ha B e non il metodo generale di A. 
+Per i linguaggi dinamici cercare il metodo giusto vuol diure risalire l'albero di ereditarietà o fare una ricerca per stringa in una mappa ad ogni chiamata. Per linguaggi a tipizzazione statica serve una risoluzione a tempo costante, per questo si usano i dispatch vector o vtable. 
+Una vtable è una tabella per classe ordinato di puntatri a funzione per ogni classe che possiede dei metodi virtuali. Gli indici delle funzioni virtuali ereditate sono le stesse delle funzioni originali della superclasse, questo permette accesso alle tabelle in tempo O(1). Ogni volta che creo un oggetto, il runtime gli aggiunge un campo invisibile detto dell'istanza, un puntatore chiamato vptr che indirizza direttamente alla vtable della classe reale dell'oggetto. 
+
+## 17) Parlami delle ITable e come differiscono rispetto alle vtable, a cosa servono? Che problema reale risolvono?
+
+La vtable ha il problema di fallire con le interfacce. Con l'ereditarietà di classe singola, il compilatore può allineare gli indici, se è ad indice 0 una funzione nella superclasse, lo sarà anche nella sottoclasse. 
+Con le interfacce questo trucco salta perché vado ad ereditare due classi che avranno metodi allo stesso indice. Per questo problema nascono le ITable. Per risolvere il problema, la JVM divide i metadati in due parti:
+- vtable classica che gestisce l'ereditarietà singola da Object e dalle superclassi concretge
+- itable un blocco dedicato alle interfacce implementate da quella specifica classe. 
+L'itable non è altro che un'array di coppie (interfaccia, tabella metodi). Ogni voce contiene il riferimetno all'interfaccia e un offster (mini-vtable) locale contentente solo i puntatori ai metodi concreti della superclasse. Cercare nella itavble però è più lento O(k), sarebbe troppo lento da eseguire sempre, per cui si usano 2 ottimizzazioni
+- Inline caching: la JVM memorizza nella call-site l'ultima classe concreta vista e l'indirizzo del metodo risolto. 
+- Stub di dispatch: se il sito di chiamata diventa polimorfico, la JVM compila brevi routine assembly ottimizzate per fare il confronto del tipi anziché scandire linearmente l'intera table. 
